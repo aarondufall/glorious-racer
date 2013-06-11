@@ -1,7 +1,7 @@
 var connect = require('connect');
 connect.createServer(
   connect.static(__dirname+'/public')
-).listen(8000);
+).listen(8080);
 
 var  util = require("util"),
        io = require("socket.io"),
@@ -52,6 +52,10 @@ function onNewPlayer(data) {
       id: existingPlayer.id
     });
   };
+  if (players.length < 1){
+    startCountdown(this);
+  }
+
   players.push(newPlayer)
   util.log(players.length);
 };
@@ -63,9 +67,49 @@ function onMovePlayer(player) {
   if(currentPlayer.position >= trackLength - 1) {
     this.emit("winner", {id: player.id});
     this.broadcast.emit("winner", {id: player.id});
+    resetPosition(); 
+    startCountdown(this);
   }
 
   this.broadcast.emit("move player", {id: player.id});
+};
+
+function resetPosition(){
+  for(var i = 0; i < players.length; i++) {
+    players[i].position = 0;
+  }
+}
+
+function startCountdown(_this) {
+  util.log('counter Started')
+  // a = setInterval(function() {
+  //   _this.emit("count down", {num: count} );
+  //   _this.broadcast.emit("count down", {num: count});
+  //   count--;
+  // if (count < 1){
+  //   clearInterval(a);
+  //   _this.emit("onStartGame")
+  //   _this.broadcast.emit("onStartGame")
+  //   count = 10;
+  // } 
+  // }, 1000)
+  var count=10;
+
+  var counter=setInterval(timer, 1000); //1000 will  run it every 1 second
+
+  function timer()
+  {
+    count=count-1;
+    if (count <= 0)
+    {
+       clearInterval(counter);
+        _this.emit("onStartGame")
+        _this.broadcast.emit("onStartGame")
+       return;
+    }
+    _this.emit("count down", {num: count} );
+    _this.broadcast.emit("count down", {num: count});
+  }
 };
 
 function onClientDisconnect(player) {
@@ -83,7 +127,7 @@ function onClientDisconnect(player) {
 
 function playerById(id) {
   for(var i = 0; i < players.length; i++) {
-    if (players[i].id == id)
+    if (players[i].id === id)
       return players[i];
   };
 

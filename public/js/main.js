@@ -23,10 +23,11 @@ var setEventHandlers = function() {
   socket.on("move player", onMovePlayer);
   socket.on("remove player", onRemovePlayer);
   socket.on("winner", onWinner);
+  socket.on("count down", onCountDown);
+  socket.on("onStartGame", onStartGame);
 };
 
 var setupEnv = function(data) {
-  console.log(data)
   trackLength = data.trackLength;
 }
 
@@ -37,7 +38,19 @@ var onSocketConnected = function() {
 var localTrackRender = function(player){
   localPlayer.id = player.id;
   drawTrack(localPlayer);
+};
+
+var onStartGame = function(){
   game(localPlayer);
+}
+
+var onCountDown = function(count) {
+  if (count.num === 1 ){
+    $('#info').html('GO!');
+  }
+  else {
+    $('#info').html(count.num);
+  }
 };
 
 var onNewPlayer = function(data) {
@@ -65,12 +78,16 @@ var onRemovePlayer = function(player) {
 
 var onWinner = function(player) {
   if (player.id === localPlayer.id){
-    $('#winner').html('You is the winner!!!!!');
+    $('#info').html('You is the winner!!!!!');
   }
   else {
-    $('#winner').html('Die Loser!!!!!');
+    $('#info').html('Die Loser!!!!!');
   }
   $(document).unbind('keyup');
+  placePlayerStart('#' + localPlayer.id);
+  for(var i = 0; i < remotePlayers.length; i++){
+    placePlayerStart('#' + remotePlayers[i].id);
+  }
 };
 
 function playerById(id) {
@@ -101,7 +118,10 @@ var drawTile = function(player) {
 };
 
 var placePlayerStart = function(player_id) {
-  var start = $("table " + player_id).find("td:first");
+  var track = $("table " + player_id);
+  var start = track.find("td:first");
+  var all = track.find("td");
+  all.removeClass('active');
   start.addClass('active');
 };
 
@@ -118,8 +138,7 @@ var game = function(player) {
 
 
 $('document').ready(function() {
-  
- 
+  $(document).unbind('keyup');
   init();
 });
 
