@@ -4,7 +4,7 @@ var localPlayer,
     trackLength;
 
 function init() {
-  socket = io.connect("http://localhost", {port: 8000, transports: ["websocket"]});
+  socket = io.connect("http://ama.local", {port: 8000, transports: ["websocket"]});
   localPlayer = new Player();
   remotePlayers = [];
   setEventHandlers();
